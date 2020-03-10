@@ -30,9 +30,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  
+    List<BluetoothService> _services;
+    BluetoothDevice _connectectedDevice;
   @override
-  void iniState(){
+  void initState(){
     super.initState();
     widget.flutterBlue.connectedDevices
     .asStream()
@@ -58,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: _buildListViewDevices(),
+      body: _buildView(),
     );
   }
 
@@ -71,6 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
   } 
   ListView _buildListViewDevices(){
     List<Container> containers = new List<Container>();
+
     for(BluetoothDevice device in widget.devicesList){
       containers.add(
         Container(
@@ -91,7 +93,21 @@ class _MyHomePageState extends State<MyHomePage> {
                   'Connect',
                   style: TextStyle(color: Colors.white),
                 ),
-                onPressed: (){},
+                onPressed: (){
+                  setState(() async {
+                    widget.flutterBlue.stopScan();
+                    try {
+                      await device.connect();
+                    } catch(e) {
+                      if(e.code != 'already_connected'){
+                        throw e;
+                      }
+                    }finally {
+                      _services = await device.discoverServices();
+                    }
+                    _connectectedDevice = device;
+                  });
+                },
               )
             ],
           ),
@@ -105,6 +121,24 @@ class _MyHomePageState extends State<MyHomePage> {
         ...containers,
       ],
     );
+  }
+  
+  ListView _buildView() {
+    if(_connectectedDevice!= null) {
+      return _buildConnectDeviceView();
+    }else {
+      return _buildListViewDevices();
+    }
+  }
+  ListView _buildConnectDeviceView() {
+    return ListView(
+      padding: const EdgeInsets.all(8),
+      children: <Widget>[],
+    );
+  }
+
+  Widget connectBlueDevice(BluetoothDevice device, List<BluetoothService> _services){
+    
   }
 
 }

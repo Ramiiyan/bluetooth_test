@@ -131,12 +131,114 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
   ListView _buildConnectDeviceView() {
+    List<Container> containers = new List<Container>();
+    for(BluetoothService service in _services){
+      List<Widget> characteristicsWidget = new List<Widget>();
+      for (BluetoothCharacteristic characteristic in service.characteristics) {
+        characteristic.value.listen((value){
+          print(value);
+        });
+        characteristicsWidget.add(
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Column(
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Text(
+                      characteristic.uuid.toString(),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    ..._buildReadWriteNotifyButton(characteristic),
+                  ],
+                ),
+                Divider(),
+              ],
+            ),
+          ),
+        );
+      }
+      containers.add(
+        Container(
+          height:50,
+          child: Row(
+            children:<Widget>[
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Text(service.uuid.toString()),
+                  ],
+                ),
+              ),
+            ]
+          ),
+        )
+      );
+    }
     return ListView(
       padding: const EdgeInsets.all(8),
-      children: <Widget>[],
+      children: <Widget>[
+        ...containers,
+      ],
     );
   }
+  List<ButtonTheme> _buildReadWriteNotifyButton(BluetoothCharacteristic characteristic){
+    List<ButtonTheme> buttons = new List<ButtonTheme>();
 
+    if(characteristic.properties.read){
+      buttons.add(
+        ButtonTheme(
+          minWidth: 10,
+          height: 20,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal:4),
+            child: RaisedButton(
+              color: Colors.blue,
+              child: Text('READ',style: TextStyle(color:Colors.white)),
+              onPressed: (){},  
+            ),
+          ),
+        ),
+      );
+    }
+    if(characteristic.properties.write){
+      buttons.add(
+        ButtonTheme(
+          minWidth: 10,
+          height: 20,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal:4),
+            child: RaisedButton(
+              color: Colors.blue,
+              child: Text('WRITE',style: TextStyle(color:Colors.white)),
+              onPressed: (){},  
+            ),
+          ),
+        ),
+      );
+    }  
+    if (characteristic.properties.notify) {
+      buttons.add(
+        ButtonTheme(
+          minWidth: 10,
+          height: 20,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: RaisedButton(
+              child: Text('NOTIFY', style: TextStyle(color: Colors.white)),
+              onPressed: () {},
+            ),
+         ),
+       ),
+     );
+    }
+    return buttons;
+  }
+  
   Widget connectBlueDevice(BluetoothDevice device, List<BluetoothService> _services){
     
   }
